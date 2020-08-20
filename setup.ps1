@@ -5,9 +5,12 @@ $versions = $args[0] -Split ","
 Write-Host "Checking for SDKS: $versions"
 
 # Collect installed SDKs.
+
 $installed = & dotnet --list-sdks | ForEach-Object {
   $_.Split(" ")[0]
 }
+
+Write-Host "Installed SDKs: $installed"
 
 # If any of our required sdks aren't installed
 # then install the whole lot. We install all of them rather than just the
