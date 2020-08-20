@@ -1,0 +1,10 @@
+name: "Install .NET Core SDKs"
+description: "Installs .NET Core SDKs listed in global.json"
+inputs:
+    path:
+      description: 'Path to directory containing global.json'
+runs:
+  using: "composite"
+  steps:
+    - run: ${{ github.action_path }}/setup.ps1 ${{ inputs.path }}
+      shell: pwsh
