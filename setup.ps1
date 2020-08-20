@@ -1,25 +1,24 @@
 $ErrorActionPreference = "Stop"
 
-$path = Join-Path $env:GITHUB_WORKSPACE $args[0]
+$versions = $args[0] -Split ","
 
-if (! (Test-Path "$path/global.json")) {
-  throw "Path $path not found"
-}
-cd $path
-$json = ConvertFrom-Json (Get-Content "global.json" -Raw)
-$required_version = $json.sdk.version
-# If there's a version mismatch with what's defined in global.json then a
-# call to dotnet --version will generate an error.
-try { dotnet --version 2>&1>$null } catch { $install_sdk = $true }
-
-# its also possible that an exception won't be thrown, and exit code will be set instead
-# dependent on OS & pwsh version.
-if ($global:LASTEXITCODE) {
-  $install_sdk = $true;
-  $global:LASTEXITCODE = 0;
+# Collect installed SDKs.
+$installed = & dotnet --list-sdks | ForEach-Object {
+  $_.Split(" ")[0]
 }
 
-# Couldn't find the required SDK, install it.
+# If any of our required sdks aren't installed
+# then install the whole lot. We install all of them rather than just the
+# ones that aren't installed because on linux, installing SDKs to a new path overrides
+# the old path, and it'll treat it as ONLY having the new sdks.
+$install_sdk = $false
+
+$versions | Foreach-Object {
+  if (!($installed -contains $_)) {
+    $install_sdk = $true
+  }
+}
+
 if ($install_sdk) {
   $installer = $null;
   if ($IsWindows) {
@@ -36,25 +35,16 @@ if ($install_sdk) {
   }
 
   $dotnet_path = "$PWD/.dotnetsdk"
-  Write-Host Installing $json.sdk.version to $dotnet_path
-  . $installer -i $dotnet_path -v $json.sdk.version
-
-  # Collect installed SDKs.
-  $sdks = & "$dotnet_path/dotnet" --list-sdks | ForEach-Object {
-    $_.Split(" ")[0]
-  }
 
   # Install any other SDKs required. Only bother installing if not installed already.
-  $json.others | Foreach-Object {
-    if (!($sdks -contains $_)) {
-      Write-Host Installing $_
-      . $installer -i $dotnet_path -v $_
-    }
+  $versions | Foreach-Object {
+    Write-Host Installing $_
+    . $installer -i $dotnet_path -v $_
   }
 
   # Tell github about the new SDK location and add it to path for the next step in the pipeline.
   Write-Output "::add-path::$dotnet_path"
 }
 else {
-  Write-Host "SDK $required_version already installed"
+  Write-Host "SDKs already installed"
 }
