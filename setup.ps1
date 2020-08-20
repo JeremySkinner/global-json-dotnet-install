@@ -2,6 +2,8 @@ $ErrorActionPreference = "Stop"
 
 $versions = $args[0] -Split ","
 
+Write-Host "Checking for SDKS: $versions"
+
 # Collect installed SDKs.
 $installed = & dotnet --list-sdks | ForEach-Object {
   $_.Split(" ")[0]
