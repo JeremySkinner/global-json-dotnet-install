@@ -7,5 +7,5 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - run: ${{ github.action_path }}/setup.ps1 ${{ inputs.path }}
+    - run: ${{ github.action_path }}/setup.ps1 ${{ inputs.versions }}
       shell: pwsh
