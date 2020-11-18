@@ -48,7 +48,7 @@ if ($install_sdk) {
   }
 
   # Tell github about the new SDK location and add it to path for the next step in the pipeline.
-  Write-Output "::add-path::$dotnet_path"
+  Write-Output $dotnet_path | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 }
 else {
   Write-Host "SDKs already installed"
