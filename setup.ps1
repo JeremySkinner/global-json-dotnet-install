@@ -44,7 +44,7 @@ if ($install_sdk) {
   # Install any other SDKs required. Only bother installing if not installed already.
   $versions | Foreach-Object {
     Write-Host Installing $_
-    . $installer -i $dotnet_path -v $_
+    . $installer -InstallDir $dotnet_path -v $_
   }
 
   # Tell github about the new SDK location and add it to path for the next step in the pipeline.
